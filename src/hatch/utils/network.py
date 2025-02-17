@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 import time
 from contextlib import contextmanager
 from typing import TYPE_CHECKING, Any, Generator
@@ -22,8 +23,18 @@ def streaming_response(*args: Any, **kwargs: Any) -> Generator[httpx.Response, N
     from secrets import choice
 
     import httpx
+    import certifi
+    import ssl
 
     attempts = 0
+    SSL_CERT_DIR = os.environ.get("SSL_CERT_DIR")
+    if SSL_CERT_DIR:
+        ctx = ssl.create_default_context(
+            cafile=os.environ.get("SSL_CERT_FILE", certifi.where()),
+            capath=SSL_CERT_DIR,
+        )
+        kwargs["verify"] =ctx 
+
     while True:
         attempts += 1
         try:
